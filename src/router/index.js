@@ -1,25 +1,38 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-
+// eslint-disable-next-line no-unused-vars
+import { Router, createRouter, createWebHistory } from 'vue-router'
+import Login from '../views/auth/Login'
+import Register from '../views/auth/Register'
 const routes = [
   {
-    path: '/',
-    name: 'Home',
-    component: Home
+    path: '/login',
+    name: 'Login',
+    component: Login
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  }
+    path: '/register',
+    name: 'Register',
+    component: Register
+  },
+
 ]
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
-  routes
+  history: createWebHistory(),
+  linkActiveClass: 'active',
+  scrollBehavior: () => ({ y: 0 }),
+  routes: routes
 })
 
+router.beforeEach((to, from, next) => {
+  let currentUser
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const match = document.cookie.match(new RegExp('(^| )' + '_token' + '=([^;]+)'))
+  // eslint-disable-next-line prefer-const
+  currentUser = match ? match[0].trim().slice(7, match[0].trim().length) : null
+  if (!currentUser && requiresAuth) {
+    next('/login')
+  } else {
+    next()
+  }
+})
 export default router
